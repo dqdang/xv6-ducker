@@ -53,3 +53,5 @@ dkms.conf
 _*
 *.asm
 *.sym
+bootblock
+*.S
