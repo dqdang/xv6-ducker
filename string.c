@@ -66,6 +66,17 @@ strncmp(const char *p, const char *q, uint n)
 }
 
 char*
+strcpy(char *s, char *t)
+{
+  char *os;
+
+  os = s;
+  while((*s++ = *t++) != 0)
+    ;
+  return os;
+}
+
+char*
 strncpy(char *s, const char *t, int n)
 {
   char *os;

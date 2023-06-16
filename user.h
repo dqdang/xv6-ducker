@@ -37,3 +37,14 @@ void* memset(void*, int, uint);
 void* malloc(uint);
 void free(void*);
 int atoi(const char*);
+
+int strcspn(const char *, const char *);
+int strncmp(const char*, const char *, uint);
+int strstr(char*, char*);
+char *strcat(char*, const char*);
+char *strtok(char*, const char*);
+uint strtoul(char*, char**, int);
+int strtol(char*, char**, int);
+int isspace(unsigned char);
+void itoa(int, char*, int);
+char *spaces(int, char[]);

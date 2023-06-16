@@ -156,6 +156,12 @@ _forktest: forktest.o $(ULIB)
 	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o _forktest forktest.o ulib.o usys.o
 	$(OBJDUMP) -S _forktest > forktest.asm
 
+# _usfsh: usfsh.o list.o debug_panic.o $(ULIB)
+# 	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^
+# 	$(OBJDUMP) -S $@ > $*.asm
+# 	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $*.sym
+
+
 mkfs: mkfs.c fs.h
 	gcc -Werror -Wall -o mkfs mkfs.c
 
