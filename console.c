@@ -19,6 +19,8 @@ static void consputc(int);
 
 static int panicked = 0;
 
+static int active = 1;
+
 static struct {
   struct spinlock lock;
   int locking;
@@ -191,7 +193,7 @@ struct {
 void
 consoleintr(int (*getc)(void))
 {
-  int c, doprocdump = 0;
+  int c, doprocdump = 0, doconsoleswitch = 0;
 
   acquire(&cons.lock);
   while((c = getc()) >= 0){
@@ -199,6 +201,15 @@ consoleintr(int (*getc)(void))
     case C('P'):  // Process listing.
       // procdump() locks cons.lock indirectly; invoke later
       doprocdump = 1;
+      break;
+    case C('T'):  // Process listing.
+      // procdump() locks cons.lock indirectly; invoke later
+      if (active == 1){
+        active = 2;
+      }else{
+        active = 1;
+      } 
+      doconsoleswitch = 1;
       break;
     case C('U'):  // Kill line.
       while(input.e != input.w &&
@@ -227,8 +238,11 @@ consoleintr(int (*getc)(void))
     }
   }
   release(&cons.lock);
-  if(doprocdump) {
+  if(doprocdump){
     procdump();  // now call procdump() wo. cons.lock held
+  }
+  if(doconsoleswitch){
+    cprintf("\nActive console now: %d\n", active);
   }
 }
 
@@ -242,7 +256,7 @@ consoleread(struct inode *ip, char *dst, int n)
   target = n;
   acquire(&cons.lock);
   while(n > 0){
-    while(input.r == input.w){
+    while(input.r == input.w || active != ip->minor ){
       if(myproc()->killed){
         release(&cons.lock);
         ilock(ip);
@@ -275,13 +289,14 @@ consolewrite(struct inode *ip, char *buf, int n)
 {
   int i;
 
-  iunlock(ip);
-  acquire(&cons.lock);
-  for(i = 0; i < n; i++)
-    consputc(buf[i] & 0xff);
-  release(&cons.lock);
-  ilock(ip);
-
+  if (active == ip->minor){
+    iunlock(ip);
+    acquire(&cons.lock);
+    for(i = 0; i < n; i++)
+      consputc(buf[i] & 0xff);
+    release(&cons.lock);
+    ilock(ip);
+  }
   return n;
 }
 
