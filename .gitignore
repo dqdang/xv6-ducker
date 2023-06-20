@@ -55,3 +55,9 @@ _*
 *.sym
 bootblock
 *.S
+entryother
+fs.img
+initcode
+kernel
+mkfs
+xv6.img
