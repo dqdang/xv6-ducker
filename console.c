@@ -40,9 +40,9 @@ printint(int xx, int base, int sign)
     x = xx;
 
   i = 0;
-  do{
+  do {
     buf[i++] = digits[x % base];
-  }while((x /= base) != 0);
+  } while((x /= base) != 0);
 
   if(sign)
     buf[i++] = '-';
@@ -61,7 +61,7 @@ cprintf(char *fmt, ...)
   char *s;
 
   locking = cons.locking;
-  if(locking)
+  if (locking)
     acquire(&cons.lock);
 
   if (fmt == 0)
@@ -196,17 +196,17 @@ consoleintr(int (*getc)(void))
   int c, doprocdump = 0, doconsoleswitch = 0;
 
   acquire(&cons.lock);
-  while((c = getc()) >= 0){
-    switch(c){
+  while((c = getc()) >= 0) {
+    switch(c) {
     case C('P'):  // Process listing.
       // procdump() locks cons.lock indirectly; invoke later
       doprocdump = 1;
       break;
-    case C('T'):  // Process listing.
-      // procdump() locks cons.lock indirectly; invoke later
-      if (active == 1){
+    case C('T'):  // Switch virtual console
+      if (active == 1) {
         active = 2;
-      }else{
+      }
+      else {
         active = 1;
       } 
       doconsoleswitch = 1;
@@ -238,11 +238,12 @@ consoleintr(int (*getc)(void))
     }
   }
   release(&cons.lock);
-  if(doprocdump){
+  if(doprocdump) {
     procdump();  // now call procdump() wo. cons.lock held
   }
-  if(doconsoleswitch){
+  if(doconsoleswitch) {
     cprintf("\nActive console now: %d\n", active);
+    create_container(active);
   }
 }
 

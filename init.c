@@ -15,9 +15,10 @@ create_vcs(void)
 
   for (i = 0; i < 4; i++) {
     dname[2] = '0' + i;
-    if ((fd = open(dname, O_RDWR)) < 0){
+    if ((fd = open(dname, O_RDWR)) < 0) {
       mknod(dname, 1, i + 2);
-    } else {
+    }
+    else {
       close(fd);
     }
   }
@@ -28,7 +29,7 @@ main(void)
 {
   int pid, wpid;
 
-  if(open("console", O_RDWR) < 0){
+  if(open("console", O_RDWR) < 0) {
     mknod("console", 1, 1);
     open("console", O_RDWR);
   }

@@ -22,6 +22,9 @@ void            cprintf(char*, ...);
 void            consoleintr(int(*)(void));
 void            panic(char*) __attribute__((noreturn));
 
+// container.c
+int             create_container(int);
+
 // exec.c
 int             exec(char*, char**);
 
@@ -120,6 +123,7 @@ void            userinit(void);
 int             wait(void);
 void            wakeup(void*);
 void            yield(void);
+int             pstates(void);
 
 // swtch.S
 void            swtch(struct context**, struct context*);
