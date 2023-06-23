@@ -63,8 +63,6 @@ main(void)
         if (vid == 0) {
           close(0);
           close(1);
-          close(2);
-          dup(fd);
           dup(fd);
           dup(fd);
 

@@ -381,7 +381,8 @@ void pipe_command(char *buf)
         prev_fd = 0; /* point "read" descriptor to stdin */
         for (i = 0; i < len - 1; i++) {
             pipe(pfds);
-            if (fork() == 0) {
+            id = fork();
+            if(id == 0) {
                 /* point stdin to previous "read" descriptor */
                 if (prev_fd != 0) {
                     close(0);
