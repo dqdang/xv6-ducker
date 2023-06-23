@@ -68,15 +68,15 @@ cprintf(char *fmt, ...)
     panic("null fmt");
 
   argp = (uint*)(void*)(&fmt + 1);
-  for(i = 0; (c = fmt[i] & 0xff) != 0; i++){
-    if(c != '%'){
+  for(i = 0; (c = fmt[i] & 0xff) != 0; i++) {
+    if(c != '%') {
       consputc(c);
       continue;
     }
     c = fmt[++i] & 0xff;
     if(c == 0)
       break;
-    switch(c){
+    switch(c) {
     case 'd':
       printint(*argp++, 10, 1);
       break;
@@ -143,15 +143,17 @@ cgaputc(int c)
 
   if(c == '\n')
     pos += 80 - pos%80;
-  else if(c == BACKSPACE){
+  else if(c == BACKSPACE) {
     if(pos > 0) --pos;
-  } else
+  }
+  else {
     crt[pos++] = (c&0xff) | 0x0700;  // black on white
+  }
 
   if(pos < 0 || pos > 25*80)
     panic("pos under/overflow");
 
-  if((pos/80) >= 24){  // Scroll up.
+  if((pos/80) >= 24) {  // Scroll up.
     memmove(crt, crt+80, sizeof(crt[0])*23*80);
     pos -= 80;
     memset(crt+pos, 0, sizeof(crt[0])*(24*80 - pos));
@@ -167,16 +169,18 @@ cgaputc(int c)
 void
 consputc(int c)
 {
-  if(panicked){
+  if(panicked) {
     cli();
     for(;;)
       ;
   }
 
-  if(c == BACKSPACE){
+  if(c == BACKSPACE) {
     uartputc('\b'); uartputc(' '); uartputc('\b');
-  } else
+  }
+  else {
     uartputc(c);
+  }
   cgaputc(c);
 }
 
@@ -203,7 +207,6 @@ consoleintr(int (*getc)(void))
     case C('P'):  // Process listing.
       // procdump() locks cons.lock indirectly; invoke later
       doprocdump = 1;
-      
       break;
     case C('T'):  // Switch virtual console
       inputs[active_vcs] = input;
@@ -239,6 +242,7 @@ consoleintr(int (*getc)(void))
   }
   release(&cons.lock);
   if(doprocdump) {
+    cprintf("\n");
     procdump();  // now call procdump() wo. cons.lock held
     input.buf[input.e++ % INPUT_BUF] = '\n';
     input.w = input.e;
@@ -262,7 +266,7 @@ consoleread(struct inode *ip, char *dst, int n)
   iunlock(ip);
   target = n;
   acquire(&cons.lock);
-  while(n > 0){
+  while(n > 0) {
     while(input.r == input.w || active_vcs != ip->minor - 1) {
       if(myproc()->killed) {
         release(&cons.lock);

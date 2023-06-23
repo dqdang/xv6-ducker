@@ -58,7 +58,7 @@ ioapicinit(void)
 
   // Mark all interrupts edge-triggered, active high, disabled,
   // and not routed to any CPUs.
-  for(i = 0; i <= maxintr; i++){
+  for(i = 0; i <= maxintr; i++) {
     ioapicwrite(REG_TABLE+2*i, INT_DISABLED | (T_IRQ0 + i));
     ioapicwrite(REG_TABLE+2*i+1, 0);
   }

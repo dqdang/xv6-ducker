@@ -36,7 +36,7 @@ idtinit(void)
 void
 trap(struct trapframe *tf)
 {
-  if(tf->trapno == T_SYSCALL){
+  if(tf->trapno == T_SYSCALL) {
     if(myproc()->killed)
       exit();
     myproc()->tf = tf;
@@ -46,9 +46,9 @@ trap(struct trapframe *tf)
     return;
   }
 
-  switch(tf->trapno){
+  switch(tf->trapno) {
   case T_IRQ0 + IRQ_TIMER:
-    if(cpuid() == 0){
+    if(cpuid() == 0) {
       acquire(&tickslock);
       ticks++;
       wakeup(&ticks);
@@ -80,7 +80,7 @@ trap(struct trapframe *tf)
 
   //PAGEBREAK: 13
   default:
-    if(myproc() == 0 || (tf->cs&3) == 0){
+    if(myproc() == 0 || (tf->cs&3) == 0) {
       // In kernel, it must be our mistake.
       cprintf("unexpected trap %d from cpu %d eip %x (cr2=0x%x)\n",
               tf->trapno, cpuid(), tf->eip, rcr2());

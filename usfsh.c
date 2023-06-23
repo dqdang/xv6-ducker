@@ -50,15 +50,13 @@ struct cmd_node *new_cmd_node(char cmd[], int history_number)
     struct cmd_node *cn;
 
     cn = (struct cmd_node *) malloc(sizeof(struct cmd_node));
-    if(cn == 0)
-    {
+    if(cn == 0) {
         printf(1, "new_cmd_node(): Cannot malloc. Exiting\n");
         exit();
     }
 
     len = strlen(cmd);
-    for(i = 0; i < len; i++)
-    {
+    for(i = 0; i < len; i++) {
         cn->cmd[i] = cmd[i];
     }
     cn->cmd[i] = '\0';
@@ -105,23 +103,18 @@ void read_line(char *line)
 {
     int i = 0;
     char buf[1];
-    
-    while(read(0, buf, 1) > 0) 
-    {
-        if(buf[0] == '\n')
-        {
+
+    while(read(0, buf, 1) > 0) {
+        if(buf[0] == '\n') {
             break;
         }
-
         line[i] = buf[0];
         i = i + 1;
 
-        if(i > (MAX_CMD_LEN - 1))
-        {
+        if(i > (MAX_CMD_LEN - 1)) {
             break;
         }
     }
-
     line[i] = '\0';
 }
 
@@ -130,23 +123,17 @@ void trim(char *str)
     int i, begin = 0, end = strlen(str) - 1;
 
     /* delete beginning white spaces */
-    while(isspace((unsigned char) str[begin]))
-    {
+    while(isspace((unsigned char) str[begin])) {
         begin++;
     }
-
     /* delete end white spaces */
-    while ((end >= begin) && isspace((unsigned char) str[end]))
-    {
+    while ((end >= begin) && isspace((unsigned char) str[end])) {
         end--;
     }
-
     /* Shift all characters back to the start of the string array. */
-    for (i = begin; i <= end; i++)
-    {
+    for (i = begin; i <= end; i++) {
         str[i - begin] = str[i];
     }
-
     str[i - begin] = '\0';
 }
 
@@ -162,11 +149,9 @@ void parse_args(char *cmd, char *delimit, char **argv)
     token = strtok(buf, delimiter);
     argv[counter++] = token;
 
-    while(token != 0)
-    {
+    while(token != 0) {
         token = strtok(0, delimiter);
-        if(token != 0)
-        {
+        if(token != 0) {
             trim(token);
         }
         argv[counter++] = token;
@@ -178,11 +163,9 @@ struct cmd_node *find_using_number(int cmd)
     struct list_elem *e;
     struct cmd_node *cn;
 
-    for(e = list_begin(&history); e != list_end(&history); e = list_next(e))
-    {
+    for(e = list_begin(&history); e != list_end(&history); e = list_next(e)) {
         cn = list_entry(e, struct cmd_node, elem);
-        if(cn->history_number == cmd)
-        {
+        if(cn->history_number == cmd) {
             return cn;
         }
     }
@@ -195,11 +178,9 @@ struct cmd_node *find_using_string(char *cmd)
     struct list_elem *e;
     struct cmd_node *cn;
 
-    for(e = list_end(&history); e != list_begin(&history); e = list_prev(e))
-    {
+    for(e = list_end(&history); e != list_begin(&history); e = list_prev(e)) {
         cn = list_entry(e, struct cmd_node, elem);
-        if(starts_with(cmd, cn->cmd))
-        {
+        if(starts_with(cmd, cn->cmd)) {
             return cn;
         }
     }
@@ -214,17 +195,14 @@ struct cmd_node *find_in_history(char *buf)
     char *cmd = &buf[i];
     struct cmd_node *cn;
 
-    if((cmd_number = strtol(cmd, 0, 10)))
-    {
+    if((cmd_number = strtol(cmd, 0, 10))) {
         cn = find_using_number(cmd_number);
     }
-    else if(strcmp(cmd, "0") == 0)
-    {
+    else if(strcmp(cmd, "0") == 0) {
         cmd_number = 0;
         cn = find_using_number(cmd_number);
     }
-    else
-    {
+    else {
         cn = find_using_string(cmd);
     }
 
@@ -233,16 +211,13 @@ struct cmd_node *find_in_history(char *buf)
 
 void exec_history(struct cmd_node *cn)
 {
-    if(strstr(cn->cmd, "|") > 0)
-    {
+    if(strstr(cn->cmd, "|") > 0) {
         pipe_command(cn->cmd);
     }
-    else if(is_shell_command(cn->cmd))
-    {
+    else if(is_shell_command(cn->cmd)) {
         exec_shell_command(cn->cmd);
     }
-    else
-    {
+    else {
         exec_command(cn->cmd);
     }
 }
@@ -251,12 +226,10 @@ void print_history()
 {
     struct list_elem *e;
     struct cmd_node *cn, *end;
-    for(e = list_begin(&history); e != list_end(&history); e = list_next(e))
-    {
+    for(e = list_begin(&history); e != list_end(&history); e = list_next(e)) {
         cn = list_entry(e, struct cmd_node, elem);
         end = list_entry(list_end(&history), struct cmd_node, elem);
-        if(cn->history_number > end->history_number - HISTORY_SIZE)
-        {
+        if(cn->history_number > end->history_number - HISTORY_SIZE) {
             printf(1, " %d  %s\n", cn->history_number, cn->cmd);
         }
     }
@@ -270,25 +243,20 @@ int add_to_history(char *buf, int history_number)
 
     /* Find the line in history to match the command,
        otherwise will be !# or !xxx... */
-    if(buf[0] == '!' && buf[1] != ' ')
-    {
+    if(buf[0] == '!' && buf[1] != ' ') {
         cn = find_in_history(buf);
-        if(cn != 0)
-        {
-            for(i = 0; cn->cmd[i] != '\0'; i++)
-            {
+        if(cn != 0) {
+            for(i = 0; cn->cmd[i] != '\0'; i++) {
                 cmd[i] = cn->cmd[i];
             }
             cn = new_cmd_node(cmd, history_number);
         }
-        else
-        {
+        else {
             printf(1, "%s: event not found!\n", buf);
             return 0;
         }
     }
-    else
-    {
+    else {
         cn = new_cmd_node(buf, history_number);
     }
 
@@ -301,8 +269,7 @@ void clear_history()
 {
     struct cmd_node *delete;
     
-    while(!list_empty(&history))
-    {
+    while(!list_empty(&history)) {
         delete = list_entry(list_pop_front(&history), struct cmd_node, elem);
         free(delete);
     }
@@ -312,21 +279,16 @@ int redirect_output(char **argv)
 {
     int fd = 1, i = 1;
 
-    while(argv[i - 1] != 0)
-    {
-        if(strcmp(argv[i - 1], ">") == 0)
-        {
+    while(argv[i - 1] != 0) {
+        if(strcmp(argv[i - 1], ">") == 0) {
             unlink(argv[i]);
-            if((fd = open(argv[i], O_CREATE | O_RDWR)) < 0)
-            {
+            if((fd = open(argv[i], O_CREATE | O_RDWR)) < 0) {
                 printf(1, "Cannot open %s\n", argv[i]);
                 exit();
             }
-
             /* Set rest of arguments to 0. */
             argv[i - 1] = 0;
-            while(argv[i] != 0)
-            {
+            while(argv[i] != 0) {
                 argv[i++] = 0;
             }
             break;
@@ -349,19 +311,15 @@ void exec_command(char *cmd)
     // id = fork(0);
     id = fork();
 
-    if(id == 0)
-    {
-        if(fd != 1)
-        {
+    if(id == 0) {
+        if(fd != 1) {
             close(1);
             dup(fd);
             close(fd);
         }
-        // if(isfscmd(argv[0]))
-        // {
+        // if(isfscmd(argv[0])) {
         //     // if(argv[1][0] == '/' && !addedcpath(argv[1]))
-        //     if(argv[1][0] == '/')
-        //     {
+        //     if(argv[1][0] == '/') {
         //         char fs[32];
         //         // getactivefs(fs);
         //         strcpy(new_path, fs);
@@ -369,16 +327,14 @@ void exec_command(char *cmd)
         //         strcat(new_path, "\0");
         //         strcpy(argv[1], new_path);
         //     }
-        //     if(!ifsafepath(argv[1]))
-        //     {
+        //     if(!ifsafepath(argv[1])) {
         //         printf(2, "You dont have permission to go here! \"%s\"\n", argv[1]);
         //         return;
         //     }
         // }
         // getactivefs(fs);
         // if((strcmp(fs, "/") != 0) && argv[0][0] == '/' && !addedcpath(argv[0]))
-        if((strcmp(fs, "/") != 0) && argv[0][0] == '/')
-        {
+        if((strcmp(fs, "/") != 0) && argv[0][0] == '/') {
           char fs[32];
           // getactivefs(fs);
           strcpy(new_path, fs);
@@ -391,8 +347,7 @@ void exec_command(char *cmd)
         printf(1, "%s: command not found.\n", cmd);
         exit();
     }
-    else
-    {
+    else {
         id = wait();
     }
 }
@@ -406,17 +361,14 @@ void exec_pipe(char *cmd)
     parse_args(cmd, " ", argv);
     fd = redirect_output(argv);
 
-    if(fd != 1)
-    {
+    if(fd != 1) {
         close(1);
         dup(fd);
         close(fd);
     }
 
-    // if(isfscmd(argv[0]))
-    // {
-    //     if(argv[1][0] == '/' && !addedcpath(argv[1]))
-    //     {
+    // if(isfscmd(argv[0])) {
+    //     if(argv[1][0] == '/' && !addedcpath(argv[1])) {
     //         char fs[32];
     //         // getactivefs(fs);
     //         strcpy(new_path, fs);
@@ -424,15 +376,13 @@ void exec_pipe(char *cmd)
     //         strcat(new_path, "\0");
     //         strcpy(argv[1], new_path);
     //     }
-    //     if(!ifsafepath(argv[1]))
-    //     {
+    //     if(!ifsafepath(argv[1])) {
     //         printf(2, "You dont have permission to go here! \"%s\"\n", argv[1]);
     //         return;
     //     }
     // }
     // getactivefs(fs);
-    // if((strcmp(fs, "/") != 0) && argv[0][0] == '/' && !addedcpath(argv[0]))
-    // {
+    // if((strcmp(fs, "/") != 0) && argv[0][0] == '/' && !addedcpath(argv[0])) {
     //   char fs[32];
     //   // getactivefs(fs);
     //   strcpy(new_path, fs);
@@ -454,8 +404,7 @@ void pipe_command(char *buf)
     pipe(fd);
     // id = fork(0);
     id = fork();
-    if(id == 0)
-    {
+    if(id == 0) {
         close(1);     /* close stdout */
         dup(fd[1]);   /* put write end of pipe into stdin index */
         close(fd[0]); /* close "read" end of pipe */
@@ -464,8 +413,7 @@ void pipe_command(char *buf)
     }
     // id = fork(0);
     id = fork();
-    if(id == 0)
-    {
+    if(id == 0) {
         close(0);     /* close stdin */
         dup(fd[0]);   /* put read end of pipe into stdin index */
         close(fd[1]); /* close "write" end of pipe */
@@ -486,8 +434,7 @@ int exec_shell_command(char *buf)
     // getactivefs(fs);
     struct cmd_node *cn;
 
-    if(strcmp(buf, "exit") == 0)
-    {
+    if(strcmp(buf, "exit") == 0) {
         printf(1, "logout\n");
 
         printf(1, "...deleting history...");
@@ -497,8 +444,7 @@ int exec_shell_command(char *buf)
         printf(1, "\n[Process completed]\n\n");
         return 1;
     }
-    else if((strcmp(buf, "cd /\n") == 0) || (strcmp(buf, "cd") == 0))
-    {
+    else if((strcmp(buf, "cd /\n") == 0) || (strcmp(buf, "cd") == 0)) {
       // setpath(index, fs, 0);
       if(chdir(fs) < 0)
       {
@@ -506,8 +452,7 @@ int exec_shell_command(char *buf)
       }
       return 0;
     }
-    else if(buf[0] == 'c' && buf[1] == 'd' && buf[2] == ' ')
-    {
+    else if(buf[0] == 'c' && buf[1] == 'd' && buf[2] == ' ') {
         // if(ifsafepath(buf+3))
         {
         // setpath(index, buf+3, 1);
@@ -517,8 +462,7 @@ int exec_shell_command(char *buf)
         }
         }
     }
-    else if(buf[0] == '!' && buf[1] != ' ')
-    {
+    else if(buf[0] == '!' && buf[1] != ' ') {
         cn = find_in_history(buf);
         if(cn == 0)
         {
@@ -530,8 +474,7 @@ int exec_shell_command(char *buf)
             exec_history(cn);
         }
     }
-    else if(strcmp(buf, "history") == 0)
-    {
+    else if(strcmp(buf, "history") == 0) {
         print_history();
     }
 
@@ -550,13 +493,11 @@ int process_one_command(int *command_counter)
     print_prompt(command_counter);
     read_line(buf);
 
-    if(buf[0] == '\0' || buf[0] == '\n')
-    {
+    if(buf[0] == '\0' || buf[0] == '\n') {
         *command_counter = *command_counter - 1;
         return done;
     }
-    else
-    {
+    else {
         if(!add_to_history(buf, *command_counter))
         {
             *command_counter = *command_counter - 1;
@@ -564,21 +505,17 @@ int process_one_command(int *command_counter)
         }
     }
 
-    if(is_shell_command(buf))
-    {
+    if(is_shell_command(buf)) {
         done = exec_shell_command(buf);
     }
-    else if(strstr(buf, "|") > 0)
-    {
+    else if(strstr(buf, "|") > 0) {
         pipe_command(buf);
     }
-    else
-    {
+    else {
         exec_command(buf);
     }
 
-    if(list_size(&history) > HISTORY_SIZE)
-    {
+    if(list_size(&history) > HISTORY_SIZE) {
         delete = list_entry(list_pop_front(&history), struct cmd_node, elem);
         free(delete);
     }
@@ -593,8 +530,7 @@ int main(int argc, char *argv[])
 
     list_init(&history);
 
-    while(!done)
-    {
+    while(!done) {
         done = process_one_command(&command_counter);
     }
     

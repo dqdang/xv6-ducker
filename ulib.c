@@ -122,32 +122,24 @@ int
 strstr(char* s, char* sub)
 {
     int i, j;
-
-    for(i = 0; s[i] != '\0'; i++)
-    {
-        if(s[i] == sub[0])
-        {
-            if(strlen(sub) == 1)
-            {  
+    for(i = 0; s[i] != '\0'; i++) {
+      if(s[i] == sub[0]) {
+        if(strlen(sub) == 1) {  
+          return i;
+        }
+        for(j = 1; sub[j] != '\0'; j++) {
+          if(s[i + j] == sub[j]) {
+            if(sub[j + 1] == '\0') {
                 return i;
             }
-            for(j = 1; sub[j] != '\0'; j++)
-            {
-                if(s[i + j] == sub[j])
-                {
-                    if(sub[j + 1] == '\0')
-                    {
-                        return i;
-                    }
-                }
-                else
-                {
-                    break;
-                }
-            }
+          }
+          else {
+            break;
+          }
         }
-     }
-     return -1;
+      }
+    }
+  return -1;
 }
 
 char *
@@ -157,15 +149,15 @@ strtok(char *s, const char *delim)
     register int ch;
 
     if (s == 0)
-  s = lasts;
+      s = lasts;
     do {
-  if ((ch = *s++) == '\0')
+      if ((ch = *s++) == '\0')
       return 0;
     } while (strchr(delim, ch));
     --s;
     lasts = s + strcspn(s, delim);
     if (*lasts != 0)
-  *lasts++ = 0;
+      *lasts++ = 0;
     return s;
 }
 
@@ -174,10 +166,10 @@ strcspn(const char *s1, const char *s2)
 {
     int ret=0;
     while(*s1)
-        if(strchr(s2,*s1))
-            return ret;
-        else
-            s1++,ret++;
+      if(strchr(s2,*s1))
+        return ret;
+      else
+        s1++,ret++;
     return ret;
 }
 
@@ -194,114 +186,83 @@ strtoul(char *string, char **endPtr, int base)
     register char *p;
     register unsigned long int result = 0;
     register unsigned digit;
-    int anyDigits = 0;
-
-    /*
-     * Skip any leading blanks.
-     */
-
-    p = string;
-    while (isspace(*p)) {
-  p += 1;
-    }
-
-    /*
-     * If no base was provided, pick one from the leading characters
-     * of the string.
-     */
+    int anydigits = 0;
     
-    if (base == 0)
-    {
-  if (*p == '0') {
+    // Skip any leading blanks.
+    p = string;
+    while (isspace(*p))
       p += 1;
-      if (*p == 'x') {
-    p += 1;
-    base = 16;
-      } else {
 
-    /*
-     * Must set anyDigits here, otherwise "0" produces a
-     * "no digits" error.
-     */
-
-    anyDigits = 1;
-    base = 8;
+    // If no base was provided, pick one from the leading characters of the string.
+    if (base == 0) {
+      if (*p == '0') {
+          p += 1;
+          if (*p == 'x') {
+            p += 1;
+            base = 16;
+          }
+          else {
+            // Must set anydigits here, otherwise "0" produces a "no digits" error.
+            anydigits = 1;
+            base = 8;
+          }
       }
-  }
-  else base = 10;
-    } else if (base == 16) {
-
-  /*
-   * Skip a leading "0x" from hex numbers.
-   */
-
-  if ((p[0] == '0') && (p[1] == 'x')) {
-      p += 2;
-  }
+      else base = 10;
     }
-
-    /*
-     * Sorry this code is so messy, but speed seems important.  Do
-     * different things for base 8, 10, 16, and other.
-     */
-
+    else if (base == 16) {
+      // Skip a leading "0x" from hex numbers.
+      if ((p[0] == '0') && (p[1] == 'x'))
+          p += 2;
+    }
     if (base == 8) {
-  for ( ; ; p += 1) {
-      digit = *p - '0';
-      if (digit > 7) {
-    break;
-      }
+      for ( ; ; p += 1) {
+        digit = *p - '0';
+        if (digit > 7)
+          break;
       result = (result << 3) + digit;
-      anyDigits = 1;
-  }
-    } else if (base == 10) {
-  for ( ; ; p += 1) {
-      digit = *p - '0';
-      if (digit > 9) {
-    break;
+      anydigits = 1;
       }
-      result = (10*result) + digit;
-      anyDigits = 1;
-  }
-    } else if (base == 16) {
-  for ( ; ; p += 1) {
-      digit = *p - '0';
-      if (digit > ('z' - '0')) {
-    break;
+    }
+    else if (base == 10) {
+      for ( ; ; p += 1) {
+        digit = *p - '0';
+        if (digit > 9)
+          break;
+        result = (10*result) + digit;
+        anydigits = 1;
       }
-      digit = cvtIn[digit];
-      if (digit > 15) {
-    break;
+    }
+    else if (base == 16) {
+      for ( ; ; p += 1) {
+        digit = *p - '0';
+        if (digit > ('z' - '0'))
+          break;
+        digit = cvtIn[digit];
+        if (digit > 15)
+          break;
+        result = (result << 4) + digit;
+        anydigits = 1;
       }
-      result = (result << 4) + digit;
-      anyDigits = 1;
-  }
-    } else {
-  for ( ; ; p += 1) {
-      digit = *p - '0';
-      if (digit > ('z' - '0')) {
-    break;
+    }
+    else {
+      for ( ; ; p += 1) {
+        digit = *p - '0';
+        if (digit > ('z' - '0'))
+          break;
+        digit = cvtIn[digit];
+        if (digit >= base)
+          break;
+        result = result*base + digit;
+        anydigits = 1;
       }
-      digit = cvtIn[digit];
-      if (digit >= base) {
-    break;
-      }
-      result = result*base + digit;
-      anyDigits = 1;
-  }
     }
 
-    /*
-     * See if there were any digits at all.
-     */
+    // See if there were any digits at all.
+    if (!anydigits)
+      p = string;
 
-    if (!anyDigits) {
-  p = string;
-    }
-
-    if (endPtr != 0) {
-  *endPtr = p;
-    }
+    if (endPtr != 0)
+      *endPtr = p;
 
     return result;
 }
@@ -312,29 +273,25 @@ strtol(char *string, char **endPtr, int base)
     register char *p;
     int result;
 
-    /*
-     * Skip any leading blanks.
-     */
-
+    // Skip any leading blanks.
     p = string;
     while (isspace(*p)) {
       p += 1;
     }
 
-    /*
-     * Check for a sign.
-     */
+    // Check for a sign.
     if (*p == '-') {
-    p += 1;
-    result = -(strtoul(p, endPtr, base));
-      } else {
-    if (*p == '+') {
-        p += 1;
+      p += 1;
+      result = -(strtoul(p, endPtr, base));
     }
-  result = strtoul(p, endPtr, base);
+    else {
+      if (*p == '+') {
+        p += 1;
+      }
+      result = strtoul(p, endPtr, base);
     }
     if ((result == 0) && (endPtr != 0) && (*endPtr == p)) {
-  *endPtr = string;
+      *endPtr = string;
     }
     return result;
 }

@@ -51,10 +51,11 @@ iderw(struct buf *b)
 
   p = memdisk + b->blockno*BSIZE;
 
-  if(b->flags & B_DIRTY){
+  if(b->flags & B_DIRTY) {
     b->flags &= ~B_DIRTY;
     memmove(p, b->data, BSIZE);
-  } else
+  }
+  else
     memmove(b->data, p, BSIZE);
   b->flags |= B_VALID;
 }

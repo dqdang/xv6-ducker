@@ -39,7 +39,7 @@ main(void)
 
   create_vcs();
 
-  for(;;){
+  for(;;) {
     printf(1, "init: starting usfsh\n");
     pid = fork();
     if(pid < 0) {
