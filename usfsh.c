@@ -372,7 +372,7 @@ void exec_pipe(char *cmd)
 
 void pipe_command(char *buf)
 {
-    int i, len, prev_fd, pfds[2];
+    int i, id, len, prev_fd, pfds[2];
     char *argv[MAX_ARGS];
     parse_args(buf, "|", argv);
     for (len = 0; argv[len] > 0; len++); /* get number of arguments */

@@ -210,7 +210,7 @@ consoleintr(int (*getc)(void))
       break;
     case C('T'):  // Switch virtual console
       inputs[active_vcs] = input;
-      active_vcs = (active_vcs + 1) % NUM_VCS;
+      active_vcs = (active_vcs + 1) % (NUM_VCS + 1);
       input = inputs[active_vcs];
       doconsoleswitch = 1;
       break;
