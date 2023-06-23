@@ -6,8 +6,8 @@
 #include "user.h"
 #include "fcntl.h"
 #include "fs.h"
-#include "stat.h"
 #include "param.h"
+#include "stat.h"
 #include "list.h"
 
 #define HISTORY_SIZE 10
@@ -151,9 +151,7 @@ void parse_args(char *cmd, char *delimit, char **argv)
 
     while(token != 0) {
         token = strtok(0, delimiter);
-        if(token != 0) {
-            trim(token);
-        }
+        trim(token);
         argv[counter++] = token;
     }
 }
@@ -302,12 +300,13 @@ int redirect_output(char **argv)
 void exec_command(char *cmd)
 {
     int id, fd;
-    char fs[32], new_path[32];
+    // char fs[32], new_path[32];
     char *argv[MAX_ARGS];
 
     parse_args(cmd, " ", argv);
 
     fd = redirect_output(argv);
+
     // id = fork(0);
     id = fork();
 
@@ -334,14 +333,14 @@ void exec_command(char *cmd)
         // }
         // getactivefs(fs);
         // if((strcmp(fs, "/") != 0) && argv[0][0] == '/' && !addedcpath(argv[0]))
-        if((strcmp(fs, "/") != 0) && argv[0][0] == '/') {
-          char fs[32];
-          // getactivefs(fs);
-          strcpy(new_path, fs);
-          strcat(new_path, argv[0]);
-          strcat(new_path, "\0");
-          strcpy(argv[0], new_path);
-        }
+        // if((strcmp(fs, "/") != 0) && argv[0][0] == '/') {
+        //   char fs[32];
+        //   // getactivefs(fs);
+        //   strcpy(new_path, fs);
+        //   strcat(new_path, argv[0]);
+        //   strcat(new_path, "\0");
+        //   strcpy(argv[0], new_path);
+        // }
 
         exec(argv[0], argv);
         printf(1, "%s: command not found.\n", cmd);
@@ -355,10 +354,9 @@ void exec_command(char *cmd)
 void exec_pipe(char *cmd)
 {
     int fd;
-    // char fs[32], new_path[32];
     char* argv[MAX_ARGS];
-    
     parse_args(cmd, " ", argv);
+
     fd = redirect_output(argv);
 
     if(fd != 1) {
@@ -367,42 +365,50 @@ void exec_pipe(char *cmd)
         close(fd);
     }
 
-    // if(isfscmd(argv[0])) {
-    //     if(argv[1][0] == '/' && !addedcpath(argv[1])) {
-    //         char fs[32];
-    //         // getactivefs(fs);
-    //         strcpy(new_path, fs);
-    //         strcat(new_path, argv[1]);
-    //         strcat(new_path, "\0");
-    //         strcpy(argv[1], new_path);
-    //     }
-    //     if(!ifsafepath(argv[1])) {
-    //         printf(2, "You dont have permission to go here! \"%s\"\n", argv[1]);
-    //         return;
-    //     }
-    // }
-    // getactivefs(fs);
-    // if((strcmp(fs, "/") != 0) && argv[0][0] == '/' && !addedcpath(argv[0])) {
-    //   char fs[32];
-    //   // getactivefs(fs);
-    //   strcpy(new_path, fs);
-    //   strcat(new_path, argv[0]);
-    //   strcat(new_path, "\0");
-    //   strcpy(argv[0], new_path);
-    // }
-
     exec(argv[0], argv);
+    printf(1, "%s: command not found.\n", cmd);
+    exit();
 }
 
 void pipe_command(char *buf)
 {
-    int id, fd[2];
+    // int i, len, id, fd_in, fd[2];
+    int len, id, fd[2];
     char *argv[MAX_ARGS];
-
     parse_args(buf, "|", argv);
-
+    for(len=0; argv[len]>0;len++); /* get length of array */
+    // fd_in = 0; /* take input from stdin first */
+    // for(i=0;i<len-1;i++) {
+    //     printf(1, "This is argv[i] %s\n", argv[i]);
+    //     pipe(fd);
+    //     id = fork();
+    //     if(id ==0) {
+    //         /* redirect previous pipe to stdin */
+    //         if(fd_in != 0) {
+    //             dup2(fd_in, 0);
+    //             close(fd_in);
+    //         }
+    //         dup2(fd[1], 1); /* put write end of current pipe with stdout*/
+    //         close(fd[1]);
+    //         exec_pipe(argv[i]);
+    //         printf(1, "%s: command not found.\n", argv[i]);
+    //         exit();
+    //     }
+    //     /* close read end of previous pipe */
+    //     close(fd_in);
+    //     /* close write end of current pipe */
+    //     close(fd[1]);
+    //     /* save read end of current pipe to use in next iteration*/
+    //     fd_in = fd[0];
+    // }
+    // if(fd_in != 0) {
+    //     dup2(fd_in, 0);
+    //     close(fd_in);
+    // }
+    // exec_pipe(argv[i]);
+    // printf(1, "%s: command not found.\n", argv[i]);
+    // exit();
     pipe(fd);
-    // id = fork(0);
     id = fork();
     if(id == 0) {
         close(1);     /* close stdout */
@@ -416,15 +422,15 @@ void pipe_command(char *buf)
     if(id == 0) {
         close(0);     /* close stdin */
         dup(fd[0]);   /* put read end of pipe into stdin index */
-        close(fd[1]); /* close "write" end of pipe */
         close(fd[0]); /* close "read" end of pipe */
+        close(fd[1]); /* close "write" end of pipe */
         exec_pipe(argv[1]);
     }
 
     close(fd[0]);
     close(fd[1]);
-    id = wait();
-    id = wait();
+    wait();
+    wait();
 }
 
 int exec_shell_command(char *buf)
@@ -446,30 +452,25 @@ int exec_shell_command(char *buf)
     }
     else if((strcmp(buf, "cd /\n") == 0) || (strcmp(buf, "cd") == 0)) {
       // setpath(index, fs, 0);
-      if(chdir(fs) < 0)
-      {
+      if(chdir(fs) < 0) {
         printf(2, "cannot cd %s\n", fs);
       }
       return 0;
     }
     else if(buf[0] == 'c' && buf[1] == 'd' && buf[2] == ' ') {
-        // if(ifsafepath(buf+3))
-        {
+        // if(ifsafepath(buf+3)) {
         // setpath(index, buf+3, 1);
-        if(chdir(&(buf[3])) < 0)
-        {
+        if(chdir(&(buf[3])) < 0) {
             printf(1, "%s does not exist.\n", &buf[3]);
         }
-        }
+        // }
     }
     else if(buf[0] == '!' && buf[1] != ' ') {
         cn = find_in_history(buf);
-        if(cn == 0)
-        {
+        if(cn == 0) {
             printf(1, "Command not found\n");
         }
-        else
-        {
+        else {
             printf(1, "%s\n", cn->cmd);
             exec_history(cn);
         }
@@ -487,7 +488,6 @@ int process_one_command(int *command_counter)
     char buf[MAX_CMD_LEN];
     struct cmd_node *delete;
 
-
     *command_counter = *command_counter + 1;
 
     print_prompt(command_counter);
@@ -498,8 +498,7 @@ int process_one_command(int *command_counter)
         return done;
     }
     else {
-        if(!add_to_history(buf, *command_counter))
-        {
+        if(!add_to_history(buf, *command_counter)) {
             *command_counter = *command_counter - 1;
             return done;
         }
@@ -533,6 +532,6 @@ int main(int argc, char *argv[])
     while(!done) {
         done = process_one_command(&command_counter);
     }
-    
+
     exit();
 }
