@@ -1,3 +1,5 @@
+#define NUM_VCS 4
+
 struct stat;
 struct rtcdate;
 
@@ -50,5 +52,3 @@ int strtol(char*, char**, int);
 int isspace(unsigned char);
 void itoa(int, char*, int);
 char *spaces(int, char[]);
-
-#define NUM_VCS 4
