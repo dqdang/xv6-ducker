@@ -50,14 +50,15 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Binary files
 _*
 *.asm
 *.sym
 bootblock
-*.S
 entryother
-fs.img
 initcode
 kernel
 mkfs
+fs.img
 xv6.img
