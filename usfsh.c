@@ -10,7 +10,7 @@
 #include "stat.h"
 #include "list.h"
 
-#define HISTORY_SIZE 10
+#define HISTORY_SIZE 11
 #define MAX_ARGS 256
 #define MAX_CMD_LEN 512
 
@@ -372,65 +372,59 @@ void exec_pipe(char *cmd)
 
 void pipe_command(char *buf)
 {
-    // int i, len, id, fd_in, fd[2];
-    int len, id, fd[2];
+    // int len, id, fd[2];
+    int i, len, prev_pipe, pfds[2], success;
     char *argv[MAX_ARGS];
     parse_args(buf, "|", argv);
-    for(len=0; argv[len]>0;len++); /* get length of array */
-    // fd_in = 0; /* take input from stdin first */
-    // for(i=0;i<len-1;i++) {
-    //     printf(1, "This is argv[i] %s\n", argv[i]);
-    //     pipe(fd);
-    //     id = fork();
-    //     if(id ==0) {
-    //         /* redirect previous pipe to stdin */
-    //         if(fd_in != 0) {
-    //             dup2(fd_in, 0);
-    //             close(fd_in);
-    //         }
-    //         dup2(fd[1], 1); /* put write end of current pipe with stdout*/
-    //         close(fd[1]);
-    //         exec_pipe(argv[i]);
-    //         printf(1, "%s: command not found.\n", argv[i]);
-    //         exit();
-    //     }
-    //     /* close read end of previous pipe */
-    //     close(fd_in);
-    //     /* close write end of current pipe */
-    //     close(fd[1]);
-    //     /* save read end of current pipe to use in next iteration*/
-    //     fd_in = fd[0];
-    // }
-    // if(fd_in != 0) {
-    //     dup2(fd_in, 0);
-    //     close(fd_in);
-    // }
-    // exec_pipe(argv[i]);
-    // printf(1, "%s: command not found.\n", argv[i]);
-    // exit();
-    pipe(fd);
-    id = fork();
-    if(id == 0) {
-        close(1);     /* close stdout */
-        dup(fd[1]);   /* put write end of pipe into stdin index */
-        close(fd[0]); /* close "read" end of pipe */
-        close(fd[1]); /* close "write" end of pipe */
-        exec_pipe(argv[0]);
-    }
-    // id = fork(0);
-    id = fork();
-    if(id == 0) {
-        close(0);     /* close stdin */
-        dup(fd[0]);   /* put read end of pipe into stdin index */
-        close(fd[0]); /* close "read" end of pipe */
-        close(fd[1]); /* close "write" end of pipe */
-        exec_pipe(argv[1]);
+    for (len = 0; argv[len] > 0; len++); /* get number of arguments */
+
+    if (fork() == 0) {
+        prev_pipe = 0; /* stdin */
+
+        for (i = 0; i < len - 1; i++) {
+            pipe(pfds);
+            if (fork() == 0) {
+                if (prev_pipe != 0) {
+                    close(0);
+                    success = dup(prev_pipe);
+                    if (success < 0) {
+                        printf(1, "Error: Failed to duplicate file descriptor.\n");
+                    }
+                    close(prev_pipe);
+                }
+
+                // Redirect stdout to current pipe
+                close(1);
+                success = dup(pfds[1]);
+                if (success < 0) {
+                    printf(1, "Error: Failed to duplicate file descriptor.\n");
+                }
+                close(pfds[1]);
+
+                printf(1, "Child process %d executing command: %s\n", getpid(), argv[i]);
+                exec_pipe(argv[i]);
+            } else {
+                // Parent process
+                close(prev_pipe);
+                close(pfds[1]);
+                prev_pipe = pfds[0];
+            }
+        }
+
+        if (prev_pipe != 0) {
+            close(0);
+            dup(prev_pipe);
+            close(prev_pipe);
+        }
+
+        exec_pipe(argv[i]);
+        exit();  // Ensure the child process exits after executing the command
     }
 
-    close(fd[0]);
-    close(fd[1]);
-    wait();
-    wait();
+    // Wait for all child processes to exit
+    for (i = 0; i < len; i++) {
+        wait();
+    }
 }
 
 int exec_shell_command(char *buf)

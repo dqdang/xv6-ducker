@@ -74,7 +74,21 @@ main(void)
         close(fd);
       }
     }
-    while((wpid=wait()) >= 0 && wpid != pid)
-      printf(1, "zombie!\n");
+    for(;;) {
+      // this call to wait() returns if the shell exits,
+      // or if a parentless process exits.
+      wpid = wait();
+      if(wpid == pid) {
+        // the shell exited; restart it.
+        break;
+      }
+      else if(wpid < 0) {
+        printf(1, "init: wait returned an error\n");
+        exit();
+      }
+      else {
+        // it was a parentless process; do nothing.
+      }
+    }
   }
 }
