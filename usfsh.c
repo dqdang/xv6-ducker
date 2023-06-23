@@ -372,56 +372,43 @@ void exec_pipe(char *cmd)
 
 void pipe_command(char *buf)
 {
-    // int len, id, fd[2];
-    int i, len, prev_pipe, pfds[2], success;
+    int i, len, prev_fd, pfds[2];
     char *argv[MAX_ARGS];
     parse_args(buf, "|", argv);
     for (len = 0; argv[len] > 0; len++); /* get number of arguments */
 
     if (fork() == 0) {
-        prev_pipe = 0; /* stdin */
-
+        prev_fd = 0; /* point "read" descriptor to stdin */
         for (i = 0; i < len - 1; i++) {
             pipe(pfds);
             if (fork() == 0) {
-                if (prev_pipe != 0) {
+                /* point stdin to previous "read" descriptor */
+                if (prev_fd != 0) {
                     close(0);
-                    success = dup(prev_pipe);
-                    if (success < 0) {
-                        printf(1, "Error: Failed to duplicate file descriptor.\n");
-                    }
-                    close(prev_pipe);
+                    dup(prev_fd);
+                    close(prev_fd);
                 }
-
-                // Redirect stdout to current pipe
+                /* redirect stdout to current pipe */
                 close(1);
-                success = dup(pfds[1]);
-                if (success < 0) {
-                    printf(1, "Error: Failed to duplicate file descriptor.\n");
-                }
+                dup(pfds[1]);
                 close(pfds[1]);
-
-                printf(1, "Child process %d executing command: %s\n", getpid(), argv[i]);
                 exec_pipe(argv[i]);
-            } else {
-                // Parent process
-                close(prev_pipe);
+            }
+            else {
+                close(prev_fd);
                 close(pfds[1]);
-                prev_pipe = pfds[0];
+                prev_fd = pfds[0]; /* save the "read" descriptor for the next command */
             }
         }
-
-        if (prev_pipe != 0) {
+        if (prev_fd != 0) {
             close(0);
-            dup(prev_pipe);
-            close(prev_pipe);
+            dup(prev_fd);
+            close(prev_fd);
         }
-
         exec_pipe(argv[i]);
-        exit();  // Ensure the child process exits after executing the command
     }
 
-    // Wait for all child processes to exit
+    /* wait for all child processes to exit */
     for (i = 0; i < len; i++) {
         wait();
     }
