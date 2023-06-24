@@ -99,5 +99,9 @@ sys_pstates(void)
 int
 sys_create_container()
 {
-  return create_container(0);
+  int n;
+
+  if(argint(0, &n) < 0)
+    return -1;
+  return create_container(n);
 }

@@ -30,7 +30,7 @@ void create(int argc, char *argv[]) {
         usage();
     }
 
-    int i = create_container(atoi(argv[3]));
+    int i = create_container(atoi(argv[2]));
     printf(1, "%d\n", i);
 }
 

@@ -67,30 +67,6 @@ sys_dup(void)
 }
 
 int
-sys_dup2(void) {
-  int oldfd, newfd;
-  struct file *oldf, *newf;
-
-  struct proc *curproc = myproc();
-
-  if(argfd(0, &oldfd, &oldf) < 0)
-    return -1;
-  if(argfd(1, &newfd, &newf) < 0)
-    return -1;
-  if(argint(0, &newfd) < 0)
-    return -1;
-
-  if(oldfd == newfd)
-    return newfd;
-  if(newfd != 0)
-    fileclose(newf);
-
-  filedup(oldf);
-  curproc->ofile[newfd] = oldf;
-  return newfd;
-}
-
-int
 sys_read(void)
 {
   struct file *f;
