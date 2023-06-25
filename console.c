@@ -192,7 +192,7 @@ struct input {
   uint e;  // Edit index
 } input;
 
-struct input inputs[NUM_VCS];
+struct input inputs[NUM_VCS + 1] /* +1 for the console */;
 
 #define C(x)  ((x)-'@')  // Control-x
 
@@ -210,7 +210,7 @@ consoleintr(int (*getc)(void))
       break;
     case C('T'):  // Switch virtual console
       inputs[active_vcs] = input;
-      active_vcs = (active_vcs + 1) % (NUM_VCS + 1);
+      active_vcs = (active_vcs + 1) % (NUM_VCS + 1); /* +1 for the console */
       input = inputs[active_vcs];
       doconsoleswitch = 1;
       break;
@@ -249,8 +249,13 @@ consoleintr(int (*getc)(void))
     wakeup(&input.r);
   }
   if(doconsoleswitch) {
-    cprintf("\n\nActive console now: %d\n", active_vcs);
-    create_container(active_vcs);
+    if(active_vcs == 0) {
+      cprintf("\n\nActive console now: console\n");
+    }
+    else {
+      cprintf("\n\nActive console now: vc%d\n", active_vcs-1);
+      create_container(active_vcs-1);
+    }
     input.buf[input.e++ % INPUT_BUF] = '\n';
     input.w = input.e;
     wakeup(&input.r);

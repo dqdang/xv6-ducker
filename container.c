@@ -12,7 +12,7 @@ int create_container(int selected_console) {
     current_container.container_id = selected_console;
     struct proc *proc = myproc();
 
-    cprintf("selected_console: %d, cid: %d, pid: %d\n", selected_console, current_container.container_id, proc->pid);
+    cprintf("selected_console: %d, cid: %d, pid: %d\n", selected_console, current_container.container_id, &proc->pid);
 
     return 23;
 }

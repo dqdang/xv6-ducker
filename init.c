@@ -28,7 +28,7 @@ create_vcs(void)
 int
 main(void)
 {
-  int i, fd, pid, wpid, vid;
+  int i, fd, pid, wpid, vid, initialized = 0;
 
   if(open("console", O_RDWR) < 0) {
     mknod("console", 1, 1);
@@ -51,7 +51,6 @@ main(void)
       printf(1, "init: exec usfsh failed\n");
       exit();
     }
-    int initialized = 0;
     if(pid > 0 && initialized == 0) {
       char *dname = "vc0";
       for (i = 0; i < NUM_VCS; i++) {
