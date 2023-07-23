@@ -27,6 +27,7 @@ int sleep(int);
 int uptime(void);
 int pstates(void);
 int create_container(int);
+int getticks(void);
 
 // ulib.c
 int stat(const char*, struct stat*);

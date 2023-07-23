@@ -22,3 +22,4 @@
 #define SYS_close            21
 #define SYS_pstates          22
 #define SYS_create_container 23
+#define SYS_getticks         24

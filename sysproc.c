@@ -105,3 +105,9 @@ sys_create_container()
     return -1;
   return create_container(n);
 }
+
+int
+sys_getticks()
+{
+  return myproc()->ticks;
+}

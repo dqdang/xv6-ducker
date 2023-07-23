@@ -105,6 +105,7 @@ extern int sys_write(void);
 extern int sys_uptime(void);
 extern int sys_pstates(void);
 extern int sys_create_container(void);
+extern int sys_getticks(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]              sys_fork,
@@ -130,6 +131,7 @@ static int (*syscalls[])(void) = {
 [SYS_close]             sys_close,
 [SYS_pstates]           sys_pstates,
 [SYS_create_container]  sys_create_container,
+[SYS_getticks]          sys_getticks,
 };
 
 void
